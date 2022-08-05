@@ -17,23 +17,65 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 
 import com.netflix.conductor.client.config.ConductorClientConfiguration;
+import com.netflix.conductor.client.config.DefaultConductorClientConfiguration;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+
+import com.sun.jersey.api.client.ClientHandler;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
 
 public class MetadataClient extends ClientBase {
 
     /** Creates a default metadata client */
     public MetadataClient() {
-        this(null);
+        this(new DefaultClientConfig(), new DefaultConductorClientConfiguration(), null);
     }
 
-    public MetadataClient(RequestHandler requestHandler) {
-        this(requestHandler, null);
+    /**
+     * @param clientConfig REST Client configuration
+     */
+    public MetadataClient(ClientConfig clientConfig) {
+        this(clientConfig, new DefaultConductorClientConfiguration(), null);
     }
 
+    /**
+     * @param clientConfig REST Client configuration
+     * @param clientHandler Jersey client handler. Useful when plugging in various http client
+     *     interaction modules (e.g. ribbon)
+     */
+    public MetadataClient(ClientConfig clientConfig, ClientHandler clientHandler) {
+        this(clientConfig, new DefaultConductorClientConfiguration(), clientHandler);
+    }
+
+    /**
+     * @param config config REST Client configuration
+     * @param handler handler Jersey client handler. Useful when plugging in various http client
+     *     interaction modules (e.g. ribbon)
+     * @param filters Chain of client side filters to be applied per request
+     */
+    public MetadataClient(ClientConfig config, ClientHandler handler, ClientFilter... filters) {
+        this(config, new DefaultConductorClientConfiguration(), handler, filters);
+    }
+
+    /**
+     * @param config REST Client configuration
+     * @param clientConfiguration Specific properties configured for the client, see {@link
+     *     ConductorClientConfiguration}
+     * @param handler Jersey client handler. Useful when plugging in various http client interaction
+     *     modules (e.g. ribbon)
+     * @param filters Chain of client side filters to be applied per request
+     */
     public MetadataClient(
-            RequestHandler requestHandler, ConductorClientConfiguration clientConfiguration) {
-        super(requestHandler, clientConfiguration);
+            ClientConfig config,
+            ConductorClientConfiguration clientConfiguration,
+            ClientHandler handler,
+            ClientFilter... filters) {
+        super(config, clientConfiguration, handler);
+        for (ClientFilter filter : filters) {
+            super.client.addFilter(filter);
+        }
     }
 
     // Workflow Metadata Operations
@@ -45,7 +87,7 @@ public class MetadataClient extends ClientBase {
      */
     public void registerWorkflowDef(WorkflowDef workflowDef) {
         Validate.notNull(workflowDef, "Workflow definition cannot be null");
-        post("metadata/workflow", workflowDef);
+        postForEntityWithRequestOnly("metadata/workflow", workflowDef);
     }
 
     /**
@@ -55,7 +97,7 @@ public class MetadataClient extends ClientBase {
      */
     public void validateWorkflowDef(WorkflowDef workflowDef) {
         Validate.notNull(workflowDef, "Workflow definition cannot be null");
-        post("metadata/workflow/validate", workflowDef);
+        postForEntityWithRequestOnly("metadata/workflow/validate", workflowDef);
     }
 
     /**
@@ -106,7 +148,7 @@ public class MetadataClient extends ClientBase {
      */
     public void registerTaskDefs(List<TaskDef> taskDefs) {
         Validate.notNull(taskDefs, "Task defs list cannot be null");
-        post("metadata/taskdefs", taskDefs);
+        postForEntityWithRequestOnly("metadata/taskdefs", taskDefs);
     }
 
     /**

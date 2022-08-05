@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import com.netflix.conductor.client.http.MetadataClient;
 import com.netflix.conductor.client.http.TaskClient;
 import com.netflix.conductor.client.http.WorkflowClient;
-import com.netflix.conductor.client.http.jersey.JerseyRequestHandler;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
@@ -38,6 +37,7 @@ import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.jersey.api.client.ClientHandler;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
 
@@ -91,33 +91,18 @@ public class WorkflowExecutor {
 
     public WorkflowExecutor(
             String apiServerURL, int pollingInterval, ClientFilter... clientFilter) {
+        String conductorServerApiBase = apiServerURL;
 
-        taskClient =
-                new TaskClient(
-                        new JerseyRequestHandler(
-                                new DefaultClientConfig(),
-                                null,
-                                new ObjectMapperProvider().getObjectMapper(),
-                                clientFilter));
-        taskClient.setRootURI(apiServerURL);
+        taskClient = new TaskClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
+        taskClient.setRootURI(conductorServerApiBase);
 
         workflowClient =
-                new WorkflowClient(
-                        new JerseyRequestHandler(
-                                new DefaultClientConfig(),
-                                null,
-                                new ObjectMapperProvider().getObjectMapper(),
-                                clientFilter));
-        workflowClient.setRootURI(apiServerURL);
+                new WorkflowClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
+        workflowClient.setRootURI(conductorServerApiBase);
 
         metadataClient =
-                new MetadataClient(
-                        new JerseyRequestHandler(
-                                new DefaultClientConfig(),
-                                null,
-                                new ObjectMapperProvider().getObjectMapper(),
-                                clientFilter));
-        metadataClient.setRootURI(apiServerURL);
+                new MetadataClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
+        metadataClient.setRootURI(conductorServerApiBase);
 
         annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
         scheduledWorkflowMonitor.scheduleAtFixedRate(

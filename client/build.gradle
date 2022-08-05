@@ -9,7 +9,8 @@ buildscript {
     }
 }
 
-apply plugin: 'groovy'
+apply plugin: 'com.github.spotbugs'
+apply plugin: 'pmd'
 
 configurations.all {
     exclude group: 'amazon', module: 'aws-java-sdk'
@@ -36,8 +37,20 @@ dependencies {
 
     testImplementation "org.powermock:powermock-module-junit4:${revPowerMock}"
     testImplementation "org.powermock:powermock-api-mockito2:${revPowerMock}"
+}
 
-    testImplementation "org.codehaus.groovy:groovy-all:${revGroovy}"
-    testImplementation "org.spockframework:spock-core:${revSpock}"
-    testImplementation "org.spockframework:spock-spring:${revSpock}"
+spotbugsMain {
+    reports {
+        xml {
+            enabled = false
+        }
+        html {
+            enabled = true
+        }
+    }
+    excludeFilter = file("spotbugsExclude.xml")
+}
+
+pmd {
+    ignoreFailures = true
 }
