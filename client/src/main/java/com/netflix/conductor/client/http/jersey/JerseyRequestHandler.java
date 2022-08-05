@@ -22,11 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.conductor.client.exception.RequestHandlerException;
 import com.netflix.conductor.client.http.RequestHandler;
-import com.netflix.conductor.common.config.ObjectMapperProvider;
 
-import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandler;
@@ -35,7 +32,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
 
 /** A {@link RequestHandler} implementation that uses the Jersey HTTP Client. */
@@ -45,33 +41,14 @@ public class JerseyRequestHandler implements RequestHandler {
 
     private final Client client;
 
-    public JerseyRequestHandler() {
-        this(new ClientFilter[0]);
-    }
-
-    public JerseyRequestHandler(ClientFilter... filters) {
-        this(null, filters);
-    }
-
-    public JerseyRequestHandler(ClientHandler clientHandler, ClientFilter... filters) {
-        this(null, clientHandler, filters);
-    }
-
     public JerseyRequestHandler(
-            ClientConfig config, ClientHandler handler, ClientFilter... filters) {
+            ClientConfig config,
+            ClientHandler handler,
+            ObjectMapper objectMapper,
+            ClientFilter... filters) {
 
-        if (config == null) {
-            config = new DefaultClientConfig();
-            ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
-
-            // https://github.com/FasterXML/jackson-databind/issues/2683
-            if (isNewerJacksonVersion()) {
-                objectMapper.registerModule(new JavaTimeModule());
-            }
-
-            JacksonJsonProvider provider = new JacksonJsonProvider(objectMapper);
-            config.getSingletons().add(provider);
-        }
+        JacksonJsonProvider provider = new JacksonJsonProvider(objectMapper);
+        config.getSingletons().add(provider);
 
         if (handler == null) {
             this.client = Client.create(config);
@@ -204,10 +181,5 @@ public class JerseyRequestHandler implements RequestHandler {
                 .type(MediaType.APPLICATION_JSON)
                 .entity(entity)
                 .accept(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON);
-    }
-
-    private boolean isNewerJacksonVersion() {
-        Version version = com.fasterxml.jackson.databind.cfg.PackageVersion.VERSION;
-        return version.getMajorVersion() == 2 && version.getMinorVersion() >= 12;
     }
 }
