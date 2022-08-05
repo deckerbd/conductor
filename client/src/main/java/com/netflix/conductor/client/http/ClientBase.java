@@ -75,9 +75,7 @@ public abstract class ClientBase {
             objectMapper.registerModule(new JavaTimeModule());
         }
 
-        // we do not want to use defaultIfNull here since creation of JerseyRequestHandler requires
-        // classes that may not be in the classpath
-        this.requestHandler = requestHandler != null ? requestHandler : new JerseyRequestHandler();
+        this.requestHandler = ObjectUtils.defaultIfNull(requestHandler, new JerseyRequestHandler());
         this.conductorClientConfiguration =
                 ObjectUtils.defaultIfNull(
                         clientConfiguration, new DefaultConductorClientConfiguration());
