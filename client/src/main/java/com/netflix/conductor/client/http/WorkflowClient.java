@@ -63,14 +63,11 @@ public class WorkflowClient extends ClientBase {
      * ConductorClientConfiguration#getWorkflowInputPayloadThresholdKB()}, it is uploaded to {@link
      * ExternalPayloadStorage}, if enabled, else the workflow is rejected.
      *
-     * @param startWorkflowRequest the {@link StartWorkflowRequest} object to start the workflow.
-     * @return the id of the workflow instance that can be used for tracking.
+     * @param startWorkflowRequest the {@link StartWorkflowRequest} object to start the workflow
+     * @return the id of the workflow instance that can be used for tracking
      * @throws ConductorClientException if {@link ExternalPayloadStorage} is disabled or if the
      *     payload size is greater than {@link
-     *     ConductorClientConfiguration#getWorkflowInputMaxPayloadThresholdKB()}.
-     * @throws NullPointerException if {@link StartWorkflowRequest} is null or {@link
-     *     StartWorkflowRequest#getName()} is null.
-     * @throws IllegalArgumentException if {@link StartWorkflowRequest#getName()} is empty.
+     *     ConductorClientConfiguration#getWorkflowInputMaxPayloadThresholdKB()}
      */
     public String startWorkflow(StartWorkflowRequest startWorkflowRequest) {
         Validate.notNull(startWorkflowRequest, "StartWorkflowRequest cannot be null");

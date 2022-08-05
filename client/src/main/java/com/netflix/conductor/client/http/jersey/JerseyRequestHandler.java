@@ -102,10 +102,7 @@ public class JerseyRequestHandler implements RequestHandler {
         ClientResponse clientResponse;
         try {
             clientResponse = getWebResourceBuilder(uri, body).put(ClientResponse.class);
-            if (clientResponse.getStatus() < 300) {
-                return clientResponse.getEntityInputStream();
-            }
-            throw new UniformInterfaceException(clientResponse);
+            return clientResponse.getEntityInputStream();
         } catch (RuntimeException e) {
             handleException(uri, e);
         }
@@ -119,10 +116,7 @@ public class JerseyRequestHandler implements RequestHandler {
         ClientResponse clientResponse;
         try {
             clientResponse = getWebResourceBuilder(uri, body).post(ClientResponse.class);
-            if (clientResponse.getStatus() < 300) {
-                return clientResponse.getEntityInputStream();
-            }
-            throw new UniformInterfaceException(clientResponse);
+            return clientResponse.getEntityInputStream();
         } catch (UniformInterfaceException e) {
             handleUniformInterfaceException(e, uri);
         } catch (RuntimeException e) {
@@ -155,9 +149,9 @@ public class JerseyRequestHandler implements RequestHandler {
 
             if (clientResponse.getStatus() < 300) {
                 return clientResponse.getEntityInputStream();
+            } else {
+                throw new UniformInterfaceException(clientResponse);
             }
-
-            throw new UniformInterfaceException(clientResponse);
         } catch (UniformInterfaceException e) {
             handleUniformInterfaceException(e, uri);
         } catch (RuntimeException e) {
