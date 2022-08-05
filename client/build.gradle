@@ -16,9 +16,8 @@ configurations.all {
 }
 
 dependencies {
-    compileOnly 'org.jetbrains:annotations:23.0.0'
-
     implementation project(':conductor-common')
+
     implementation "com.sun.jersey:jersey-client:${revJersey}"
 
     implementation "com.netflix.spectator:spectator-api:${revSpectator}"

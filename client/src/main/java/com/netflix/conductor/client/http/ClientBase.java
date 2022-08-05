@@ -24,7 +24,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -149,9 +148,8 @@ public abstract class ClientBase {
 
     protected <T> T getForEntity(
             String url, Object[] queryParams, Class<T> responseType, Object... uriVariables) {
-        return getForEntity(url, queryParams, uriVariables)
-                .map(inputStream -> convertToType(inputStream, responseType))
-                .orElse(null);
+        InputStream response = getForEntity(url, queryParams, uriVariables);
+        return convertToType(response, responseType);
     }
 
     protected <T> T getForEntity(
@@ -159,9 +157,8 @@ public abstract class ClientBase {
             Object[] queryParams,
             TypeReference<T> responseType,
             Object... uriVariables) {
-        return getForEntity(url, queryParams, uriVariables)
-                .map(inputStream -> convertToType(inputStream, responseType))
-                .orElse(null);
+        InputStream response = getForEntity(url, queryParams, uriVariables);
+        return convertToType(response, responseType);
     }
 
     /**
@@ -246,11 +243,10 @@ public abstract class ClientBase {
         return version.getMajorVersion() == 2 && version.getMinorVersion() >= 12;
     }
 
-    private Optional<InputStream> getForEntity(
-            String url, Object[] queryParams, Object... uriVariables) {
+    private InputStream getForEntity(String url, Object[] queryParams, Object... uriVariables) {
         URI uri = getURIBuilder(getFullUrl(url), queryParams).build(uriVariables);
         try {
-            return Optional.ofNullable(requestHandler.get(uri));
+            return requestHandler.get(uri);
         } catch (RequestHandlerException rhe) {
             throw createClientException(rhe);
         }
